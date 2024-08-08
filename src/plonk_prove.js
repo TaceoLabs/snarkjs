@@ -223,7 +223,7 @@ export default async function plonk16Prove(zkeyFileName, witnessFileName, logger
         // STEP 1.1 - Generate random blinding scalars (b1, ..., b11) ∈ F
         challenges.b = [];
         for (let i=1; i<=11; i++) {
-            challenges.b[i] = curve.Fr.random();
+            challenges.b[i] = curve.Fr.one;
         }
 
         // STEP 1.2 - Compute wire polynomials a(X), b(X) and c(X)
@@ -240,7 +240,6 @@ export default async function plonk16Prove(zkeyFileName, witnessFileName, logger
         proof.addPolynomial("A", commitA);
         proof.addPolynomial("B", commitB);
         proof.addPolynomial("C", commitC);
-
         return 0;
     }
 
@@ -299,6 +298,7 @@ export default async function plonk16Prove(zkeyFileName, witnessFileName, logger
         polynomials.A.blindCoefficients([challenges.b[2], challenges.b[1]]);
         polynomials.B.blindCoefficients([challenges.b[4], challenges.b[3]]);
         polynomials.C.blindCoefficients([challenges.b[6], challenges.b[5]]);
+
 
         // Check degrees
         if (polynomials.A.degree() >= zkey.domainSize + 2) {
@@ -467,6 +467,12 @@ export default async function plonk16Prove(zkeyFileName, witnessFileName, logger
         challenges.alpha2 = Fr.square(challenges.alpha);
         if (logger) logger.debug("··· challenges.alpha: " + Fr.toString(challenges.alpha, 16));
 
+        /*
+        for(let i = 0;i<zkey.domainSize ;++i) {
+           console.log(Fr.toString(polynomials.Z.coef.slice(i* 32,i*32+32)));
+        }
+        */
+
         // Compute quotient polynomial T(X)
         if (logger) logger.debug("> Computing T polynomial");
         await computeT();
@@ -594,6 +600,7 @@ export default async function plonk16Prove(zkeyFileName, witnessFileName, logger
             let e3a = a;
             e3a = Fr.add(e3a, Fr.mul(challenges.beta, s1));
             e3a = Fr.add(e3a, challenges.gamma);
+            //console.log(Fr.toString(e3a));
 
             let e3b = b;
             e3b = Fr.add(e3b, Fr.mul(challenges.beta, s2));
@@ -627,10 +634,13 @@ export default async function plonk16Prove(zkeyFileName, witnessFileName, logger
             w = Fr.mul(w, Fr.w[zkey.power + 2]);
         }
 
+
+
         // Compute the coefficients of the polynomial T0(X) from buffers.T0
         if (logger)
             logger.debug("··· Computing T ifft");
         polynomials.T = await Polynomial.fromEvaluations(buffers.T, curve, logger);
+
 
         // Divide the polynomial T0 by Z_H(X)
         if (logger)
@@ -663,6 +673,7 @@ export default async function plonk16Prove(zkeyFileName, witnessFileName, logger
         polynomials.T1 = new Polynomial(new BigBuffer((zkey.domainSize + 1) * n8r), curve, logger);
         polynomials.T2 = new Polynomial(new BigBuffer((zkey.domainSize + 1) * n8r), curve, logger);
         polynomials.T3 = new Polynomial(new BigBuffer((zkey.domainSize + 6) * n8r), curve, logger);
+
 
         polynomials.T1.coef.set(polynomials.T.coef.slice(0, sDomain), 0);
         polynomials.T2.coef.set(polynomials.T.coef.slice(sDomain, sDomain * 2), 0);
@@ -727,6 +738,7 @@ export default async function plonk16Prove(zkeyFileName, witnessFileName, logger
         for (let i = 2; i < 6; i++) {
             challenges.v[i] = Fr.mul(challenges.v[i - 1], challenges.v[1]);
         }
+
 
         // STEP 5.2 Compute linearisation polynomial r(X)
         if (logger) logger.debug("> Computing linearisation polynomial R(X)");
@@ -794,12 +806,12 @@ export default async function plonk16Prove(zkeyFileName, witnessFileName, logger
             }
         }
 
+
         let eval_pi = Fr.zero;
         for (let i=0; i<publicSignals.length; i++) {
             const w = Fr.e(publicSignals[i]);
             eval_pi = Fr.sub(eval_pi, Fr.mul(w, L[i+1]));
         }
-
         if (logger) logger.debug("PI: " + Fr.toString(eval_pi, 16));
 
         // Compute constant parts of R(X)
@@ -878,6 +890,7 @@ export default async function plonk16Prove(zkeyFileName, witnessFileName, logger
         polynomials.Wxi.subScalar(Fr.mul(challenges.v[5], proof.evaluations.eval_s2));
 
         polynomials.Wxi.divByZerofier(1, challenges.xi);
+
     }
 
     async function computeWxiw() {

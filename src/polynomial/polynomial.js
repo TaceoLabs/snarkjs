@@ -18,6 +18,8 @@
 */
 
 import {BigBuffer} from "ffjavascript";
+import {  utils} from "ffjavascript";
+const {stringifyBigInts} = utils;
 
 export class Polynomial {
     constructor(coefficients, curve, logger) {
@@ -594,6 +596,9 @@ export class Polynomial {
             const i_n8 = i * this.Fr.n8;
             this.coef.set(this.Fr.neg(this.coef.slice(i_n8, i_n8 + this.Fr.n8)), i_n8);
         }
+     // for(let i = 0;i<domainSize  ;++i) {
+     //    console.log(this.Fr.toString(this.coef.slice(i* 32,i*32+32)));
+     // }
 
         const upperBound = this.coef.byteLength / this.Fr.n8;
         for (let i = domainSize; i < upperBound; i++) {
@@ -970,6 +975,8 @@ export class Polynomial {
     async multiExponentiation(PTau, name) {
         const n = this.coef.byteLength / this.Fr.n8;
         const PTauN = PTau.slice(0, n * this.G1.F.n8 * 2);
+
+       
         const bm = await this.Fr.batchFromMontgomery(this.coef);
         let res = await this.G1.multiExpAffine(PTauN, bm, this.logger, name);
         res = this.G1.toAffine(res);

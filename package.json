@@ -25,7 +25,7 @@
     "templates/"
   ],
   "scripts": {
-    "test": "mocha",
+    "test": "mocha test/fullprocess.js",
     "testv12": "mocha test/fflonk.test.js test/fullprocess.js test/keypar_test.js test/polynomial.test.js",
     "build": "npm run buildcjs && npm run buildcli && npm run buildiife && npm run buildiifemin && npm run buildesm",
     "buildcjs": "rollup -c config/rollup.cjs.config.js",

@@ -51,6 +51,7 @@ export default async function plonkVerify(_vk_verifier, _publicSignals, _proof, 
     }
     const challenges = calculatechallenges(curve, proof, publicSignals, vk_verifier);
     
+
     if (logger) {
         logger.debug("beta: " + Fr.toString(challenges.beta, 16));    
         logger.debug("gamma: " + Fr.toString(challenges.gamma, 16));    
@@ -97,6 +98,9 @@ export default async function plonkVerify(_vk_verifier, _publicSignals, _proof, 
     if (logger) {
         logger.debug("E: " + G1.toString(G1.toAffine(E), 16));
     }
+    //console.log(G1.toString(D));
+ //  console.log(G1.toString(F));
+ //  console.log(G1.toString(E));
 
     const res = await isValidPairing(curve, proof, challenges, vk_verifier, E, F);
 
@@ -304,6 +308,7 @@ function calculateD(curve, proof, challenges, vk, l1) {
     d1 = G1.add(d1, G1.timesFr(vk.Qr, proof.eval_b));
     d1 = G1.add(d1, G1.timesFr(vk.Qo, proof.eval_c));
     d1 = G1.add(d1, vk.Qc);
+    console.log(G1.toString(d1));
 
     const betaxi = Fr.mul(challenges.beta, challenges.xi);
 
